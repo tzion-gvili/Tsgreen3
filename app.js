@@ -91,37 +91,5 @@ const Ads = {
   },
 };
 
-// Soft "pop" on every tap, made live with Web Audio (no sound files).
-const Click = {
-  ctx: null,
-  play(kind) {
-    try {
-      this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      const t = this.ctx.currentTime;
-      const notes = kind === 'app' ? [[880, 0], [1320, 0.06]] : [[1040, 0]];
-      for (const [f, d] of notes) {
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.type = 'sine';
-        o.frequency.setValueAtTime(f, t + d);
-        o.frequency.exponentialRampToValueAtTime(f * 0.6, t + d + 0.12);
-        g.gain.setValueAtTime(0.0001, t + d);
-        g.gain.exponentialRampToValueAtTime(0.18, t + d + 0.008);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.16);
-        o.connect(g).connect(this.ctx.destination);
-        o.start(t + d);
-        o.stop(t + d + 0.18);
-      }
-    } catch (e) { /* no audio, no problem */ }
-  },
-};
-
-// pointerdown fires before the link navigates away, so the sound is heard
-document.addEventListener('pointerdown', (e) => {
-  const el = e.target.closest('a, button');
-  if (el) Click.play(el.classList.contains('app') ? 'app' : 'tap');
-});
-
 renderProjects();
 Ads.load();
